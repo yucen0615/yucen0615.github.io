@@ -3,119 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>行事曆</title>
+<title>行事曆（提醒版）</title>
 <style>
-:root {
-    --bg: #ffffff;
-    --text: #222222;
-    --card: #f4f4f4;
-    --accent: #4A90E2;
-}
-body.dark {
-    --bg: #1e1e1e;
-    --text: #eaeaea;
-    --card: #2a2a2a;
-    --accent: #6aa9ff;
-}
-body {
-    font-family: sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    margin: 0;
-    padding: 20px;
-    transition: background 0.3s, color 0.3s;
-}
-.top { display: flex; justify-content: space-between; align-items: center; }
-button {
-    padding: 8px 14px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    background: var(--accent);
-    color: white;
-    font-size: 14px;
-    margin-left: 5px;
-}
-.calendar {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-}
-.day {
-    background: var(--card);
-    padding: 15px;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    position: relative;
-    color: var(--text);
-}
-.today { border: 2px solid var(--accent); }
-.event-dot { width: 8px; height: 8px; border-radius: 50%; position: absolute; left: 50%; transform: translateX(-50%); }
-.exam-dot { background: #e74c3c; bottom: 5px; }
-.hw-dot { background: #3498db; bottom: 5px; }
-#modal {
-    position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center;
-}
-#modalContent {
-    background: var(--card);
-    padding: 20px;
-    border-radius: 10px;
-    width: 300px;
-}
-textarea, select { font-family: sans-serif; width: 100%; margin-bottom: 10px; padding:6px; border-radius:6px; }
+:root { --bg:#fff; --text:#222; --card:#f4f4f4; --accent:#4A90E2; }
+body.dark { --bg:#1e1e1e; --text:#eaeaea; --card:#2a2a2a; --accent:#6aa9ff; }
+body { font-family:sans-serif; background:var(--bg); color:var(--text); margin:0; padding:20px; transition:0.3s; }
+.top { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px; }
+button { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; background:var(--accent); color:white; margin-left:5px; }
+.calendar { margin-top:20px; display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+.day { background:var(--card); padding:10px; border-radius:8px; cursor:pointer; position:relative; min-height:60px; color:var(--text); overflow:auto; }
+.today { border:2px solid var(--accent); }
+.event-item { font-size:12px; margin:2px 0; padding:2px 4px; border-radius:4px; color:white; display:flex; justify-content:space-between; align-items:center; }
+.exam { background:#e74c3c; }
+.hw { background:#3498db; }
+#modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; }
+#modalContent { background:var(--card); padding:20px; border-radius:10px; width:300px; max-height:80%; overflow:auto; }
+input, select, textarea { width:100%; margin-bottom:10px; padding:6px; border-radius:6px; font-family:sans-serif; }
+.event-list { max-height:150px; overflow:auto; margin-top:10px; border-top:1px solid #ccc; padding-top:5px; }
+.event-list button { background:red; font-size:12px; padding:2px 5px; margin-left:5px; }
 </style>
 </head>
 <body>
 
 <div class="top">
-    <h2 id="monthTitle"></h2>
-    <div>
-        <button onclick="prevMonth()">上個月</button>
-        <button onclick="nextMonth()">下個月</button>
-        <button onclick="toggleDark()">深色模式</button>
-    </div>
+  <h2 id="monthTitle"></h2>
+  <div>
+    <button onclick="prevMonth()">上個月</button>
+    <button onclick="nextMonth()">下個月</button>
+    <button onclick="toggleDark()">深色模式</button>
+  </div>
 </div>
 
 <div class="calendar" id="calendar"></div>
 
 <div id="modal">
-    <div id="modalContent">
-        <h3 id="modalDate"></h3>
-        <select id="eventType">
-            <option value="exam">考試</option>
-            <option value="hw">作業</option>
-        </select>
-        <textarea id="eventInput" rows="4"></textarea>
-        <button onclick="saveEvent()">保存</button>
-    </div>
+  <div id="modalContent">
+    <h3 id="modalDate"></h3>
+    <label>事件類型</label>
+    <select id="eventType">
+      <option value="exam">考試</option>
+      <option value="hw">作業</option>
+    </select>
+    <label>開始時間</label>
+    <input type="time" id="startTime">
+    <label>結束時間</label>
+    <input type="time" id="endTime">
+    <label>事件內容</label>
+    <textarea id="eventInput" rows="3" placeholder="輸入事件內容"></textarea>
+    <label>提前提醒(分鐘)</label>
+    <input type="number" id="remindTime" placeholder="例如 60" min="0">
+    <button onclick="addEvent()">新增事件</button>
+    <div class="event-list" id="eventList"></div>
+    <button style="margin-top:10px;" onclick="closeModal()">關閉</button>
+  </div>
 </div>
 
 <script>
-let current = new Date();
-let selectedDate = null;
-let events = JSON.parse(localStorage.getItem('events') || '{}');
+let current=new Date(), selectedDate=null;
+let events=JSON.parse(localStorage.getItem('events')||'{}');
 
 function renderCalendar(){
-    const year = current.getFullYear();
-    const month = current.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const lastDate = new Date(year, month+1, 0).getDate();
-    document.getElementById('monthTitle').innerText = `${year} 年 ${month+1} 月`;
-
-    const cal = document.getElementById('calendar');
-    cal.innerHTML = '';
-    for(let i=0;i<firstDay;i++) cal.innerHTML += '<div></div>';
-    for(let d=1; d<=lastDate; d++){
-        const today = new Date();
-        const id = `${year}-${month+1}-${d}`;
-        const hasEvent = events[id];
-        cal.innerHTML += `<div class="day ${today.toDateString() === new Date(year,month,d).toDateString() ? 'today' : ''}" onclick="openModal('${id}')">
-                            ${d}
-                            ${hasEvent ? `<div class="event-dot ${hasEvent.type==='exam'?'exam-dot':'hw-dot'}"></div>` : ''}
-                         </div>`;
-    }
+  const year=current.getFullYear(), month=current.getMonth();
+  const firstDay=new Date(year,month,1).getDay();
+  const lastDate=new Date(year,month+1,0).getDate();
+  document.getElementById('monthTitle').innerText=`${year} 年 ${month+1} 月`;
+  const cal=document.getElementById('calendar'); cal.innerHTML='';
+  for(let i=0;i<firstDay;i++) cal.innerHTML+='<div></div>';
+  for(let d=1;d<=lastDate;d++){
+    const today=new Date(), id=`${year}-${month+1}-${d}`;
+    const dayEvents=events[id]||[];
+    let eventHtml='';
+    dayEvents.sort((a,b)=>a.start.localeCompare(b.start));
+    dayEvents.forEach(ev=>{
+      eventHtml+=`<div class="event-item ${ev.type}"> ${ev.start}-${ev.end} ${ev.text} </div>`;
+    });
+    cal.innerHTML+=`<div class="day ${today.toDateString()===new Date(year,month,d).toDateString()?'today':''}" onclick="openModal('${id}')"><strong>${d}</strong>${eventHtml}</div>`;
+  }
 }
 
 function prevMonth(){ current.setMonth(current.getMonth()-1); renderCalendar(); }
@@ -123,40 +86,61 @@ function nextMonth(){ current.setMonth(current.getMonth()+1); renderCalendar(); 
 function toggleDark(){ document.body.classList.toggle('dark'); }
 
 function openModal(id){
-    selectedDate = id;
-    document.getElementById('modalDate').innerText = id;
-    if(events[id]){
-        document.getElementById('eventInput').value = events[id].text;
-        document.getElementById('eventType').value = events[id].type;
-    } else {
-        document.getElementById('eventInput').value = '';
-        document.getElementById('eventType').value = 'exam';
-    }
-    document.getElementById('modal').style.display = 'flex';
+  selectedDate=id; document.getElementById('modalDate').innerText=id;
+  document.getElementById('eventInput').value=''; document.getElementById('startTime').value='';
+  document.getElementById('endTime').value=''; document.getElementById('remindTime').value='';
+  renderEventList(); document.getElementById('modal').style.display='flex';
 }
 
-function saveEvent(){
-    const text = document.getElementById('eventInput').value.trim();
-    const type = document.getElementById('eventType').value;
-    if(text===''){ delete events[selectedDate]; }
-    else { events[selectedDate] = { text, type }; }
-    localStorage.setItem('events', JSON.stringify(events));
-    document.getElementById('modal').style.display = 'none';
-    renderCalendar();
-    checkReminder();
+function addEvent(){
+  const text=document.getElementById('eventInput').value.trim();
+  const type=document.getElementById('eventType').value;
+  const start=document.getElementById('startTime').value;
+  const end=document.getElementById('endTime').value;
+  const remind=parseInt(document.getElementById('remindTime').value) || 0;
+  if(!text||!start||!end) return alert('請完整填寫事件及時間');
+  if(!events[selectedDate]) events[selectedDate]=[];
+  events[selectedDate].push({text,type,start,end,remind});
+  localStorage.setItem('events',JSON.stringify(events));
+  document.getElementById('eventInput').value=''; document.getElementById('startTime').value='';
+  document.getElementById('endTime').value=''; document.getElementById('remindTime').value='';
+  renderEventList(); renderCalendar();
 }
 
-window.onclick = e => { if(e.target===document.getElementById('modal')) document.getElementById('modal').style.display='none'; }
+function deleteEvent(index){
+  events[selectedDate].splice(index,1);
+  if(events[selectedDate].length===0) delete events[selectedDate];
+  localStorage.setItem('events',JSON.stringify(events));
+  renderEventList(); renderCalendar();
+}
+
+function renderEventList(){
+  const listDiv=document.getElementById('eventList'); listDiv.innerHTML='';
+  const dayEvents=events[selectedDate]||[];
+  dayEvents.sort((a,b)=>a.start.localeCompare(b.start));
+  dayEvents.forEach((ev,i)=>{
+    listDiv.innerHTML+=`<div class="event-item ${ev.type}">[${ev.start}-${ev.end}] ${ev.text} <button onclick="deleteEvent(${i})">刪除</button></div>`;
+  });
+}
+
+function closeModal(){ document.getElementById('modal').style.display='none'; }
 
 function checkReminder(){
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate()+1);
-    const id = `${tomorrow.getFullYear()}-${tomorrow.getMonth()+1}-${tomorrow.getDate()}`;
-    if(events[id]) alert(`明天有事件：\n\n${events[id].text}`);
+  const now=new Date();
+  for(const date in events){
+    events[date].forEach(ev=>{
+      const [y,m,d]=date.split('-').map(Number);
+      const [h1,m1]=ev.start.split(':').map(Number);
+      const eventTime=new Date(y,m-1,d,h1,m1);
+      const remindTime=new Date(eventTime.getTime() - ev.remind*60000);
+      if(remindTime<=now && eventTime>=now){
+        alert(`提醒：${date} ${ev.start}-${ev.end} ${ev.text}`);
+      }
+    });
+  }
 }
 
-renderCalendar();
-checkReminder();
+renderCalendar(); checkReminder();
 </script>
 
 </body>
