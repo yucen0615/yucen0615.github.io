@@ -1,147 +1,153 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>行事曆（提醒版）</title>
-<style>
-:root { --bg:#fff; --text:#222; --card:#f4f4f4; --accent:#4A90E2; }
-body.dark { --bg:#1e1e1e; --text:#eaeaea; --card:#2a2a2a; --accent:#6aa9ff; }
-body { font-family:sans-serif; background:var(--bg); color:var(--text); margin:0; padding:20px; transition:0.3s; }
-.top { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px; }
-button { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; background:var(--accent); color:white; margin-left:5px; }
-.calendar { margin-top:20px; display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
-.day { background:var(--card); padding:10px; border-radius:8px; cursor:pointer; position:relative; min-height:60px; color:var(--text); overflow:auto; }
-.today { border:2px solid var(--accent); }
-.event-item { font-size:12px; margin:2px 0; padding:2px 4px; border-radius:4px; color:white; display:flex; justify-content:space-between; align-items:center; }
-.exam { background:#e74c3c; }
-.hw { background:#3498db; }
-#modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; }
-#modalContent { background:var(--card); padding:20px; border-radius:10px; width:300px; max-height:80%; overflow:auto; }
-input, select, textarea { width:100%; margin-bottom:10px; padding:6px; border-radius:6px; font-family:sans-serif; }
-.event-list { max-height:150px; overflow:auto; margin-top:10px; border-top:1px solid #ccc; padding-top:5px; }
-.event-list button { background:red; font-size:12px; padding:2px 5px; margin-left:5px; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>資訊課—教學網站範例</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    pre { background: rgba(0,0,0,0.05); padding: 0.75rem; border-radius: .5rem; overflow:auto }
 </style>
 </head>
-<body>
+<body class="bg-gradient-to-b from-slate-50 to-white min-h-screen text-slate-800">
+  <header class="max-w-5xl mx-auto p-6 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 bg-indigo-500 text-white rounded-lg flex items-center justify-center font-bold">資訊</div>
+      <div>
+        <h1 class="text-xl font-semibold">課業行事曆</h1>
+        <p class="text-sm text-slate-500">課程、作業、提醒與即時範例（單檔 HTML）</p>
+      </div>
+    </div>
+    <nav class="space-x-4 text-sm">
+      <a href="#lessons" class="hover:underline">課程</a>
+      <a href="#exercise" class="hover:underline">練習</a>
+      <a href="#playground" class="hover:underline">試玩</a>
+      <button id="downloadBtn" class="ml-3 px-3 py-1 bg-indigo-600 text-white rounded">下載範例</button>
+    </nav>
+  </header>
 
-<div class="top">
-  <h2 id="monthTitle"></h2>
-  <div>
-    <button onclick="prevMonth()">上個月</button>
-    <button onclick="nextMonth()">下個月</button>
-    <button onclick="toggleDark()">深色模式</button>
-  </div>
-</div>
+  <main class="max-w-5xl mx-auto p-6 grid gap-6">
+    <!-- Hero -->
+    <section class="card">
+      <h2 class="text-2xl font-bold">開始你的資訊課旅程</h2>
+      <p class="mt-2 text-slate-600">這是一個單檔範例網站，包含：課程大綱、程式練習題、以及可即時執行的 JS 範例。可直接下載、修改或上傳到學校的 LMS。</p>
+    </section>
 
-<div class="calendar" id="calendar"></div>
+    <!-- Lessons -->
+    <section id="lessons" class="card">
+      <h3 class="text-lg font-semibold">課程大綱</h3>
+      <ul class="mt-3 grid md:grid-cols-3 gap-3">
+        <li class="p-3 border rounded">
+          <strong>第1週 — HTML/CSS</strong>
+          <div class="text-sm text-slate-500">語意標籤、版面配置、簡易響應式</div>
+        </li>
+        <li class="p-3 border rounded">
+          <strong>第2週 — JavaScript 基礎</strong>
+          <div class="text-sm text-slate-500">變數、資料型別、流程控制、函式</div>
+        </li>
+        <li class="p-3 border rounded">
+          <strong>第3週 — DOM 與互動</strong>
+          <div class="text-sm text-slate-500">操作表單、事件監聽、動畫</div>
+        </li>
+        <li class="p-3 border rounded">
+          <strong>第4週 — 資料與 API</strong>
+          <div class="text-sm text-slate-500">Fetch、JSON、簡易後端串接</div>
+        </li>
+        <li class="p-3 border rounded">
+          <strong>期末專案</strong>
+          <div class="text-sm text-slate-500">小組作品：完成一個互動式網站</div>
+        </li>
+      </ul>
+    </section>
 
-<div id="modal">
-  <div id="modalContent">
-    <h3 id="modalDate"></h3>
-    <label>事件類型</label>
-    <select id="eventType">
-      <option value="exam">考試</option>
-      <option value="hw">作業</option>
-    </select>
-    <label>開始時間</label>
-    <input type="time" id="startTime">
-    <label>結束時間</label>
-    <input type="time" id="endTime">
-    <label>事件內容</label>
-    <textarea id="eventInput" rows="3" placeholder="輸入事件內容"></textarea>
-    <label>提前提醒(分鐘)</label>
-    <input type="number" id="remindTime" placeholder="例如 60" min="0">
-    <button onclick="addEvent()">新增事件</button>
-    <div class="event-list" id="eventList"></div>
-    <button style="margin-top:10px;" onclick="closeModal()">關閉</button>
-  </div>
-</div>
+    <!-- Exercise -->
+    <section id="exercise" class="card">
+      <h3 class="text-lg font-semibold">練習題：判斷閏年</h3>
+      <p class="mt-2 text-slate-600">輸入年份，判斷是否為閏年（提示：能被400整除，或能被4整除但不能被100整除）。</p>
+      <div class="mt-3 flex gap-3 items-center">
+        <input id="yearInput" type="number" placeholder="輸入年份" class="p-2 border rounded w-40" />
+        <button id="checkBtn" class="px-3 py-2 bg-indigo-600 text-white rounded">判斷</button>
+        <div id="result" class="text-sm"></div>
+      </div>
+      <pre id="exerciseCode" class="mt-3">// 範例答案
+function isLeapYear(y){
+  return (y%400===0) || (y%4===0 && y%100!==0);
+}
+</pre>
+    </section>
 
-<script>
-let current=new Date(), selectedDate=null;
-let events=JSON.parse(localStorage.getItem('events')||'{}');
+    <!-- Playground -->
+    <section id="playground" class="card">
+      <h3 class="text-lg font-semibold">互動試玩：即時執行 JS</h3>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm">JS 程式碼（放到右側執行）</label>
+          <textarea id="editor" class="w-full h-48 mt-2 p-2 border rounded font-mono" spellcheck="false">// 範例：顯示今天日期
+const root = document.getElementById('demoRoot');
+root.innerText = '今天是：' + new Date().toLocaleString();
+</textarea>
+          <div class="mt-2 flex gap-2">
+            <button id="runBtn" class="px-3 py-1 bg-green-600 text-white rounded">執行</button>
+            <button id="clearBtn" class="px-3 py-1 bg-slate-200 rounded">清除</button>
+          </div>
+        </div>
+        <div>
+          <label class="text-sm">輸出</label>
+          <div id="demoOutput" class="mt-2 p-3 border rounded h-48 overflow-auto bg-slate-50">
+            <div id="demoRoot">output area</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-function renderCalendar(){
-  const year=current.getFullYear(), month=current.getMonth();
-  const firstDay=new Date(year,month,1).getDay();
-  const lastDate=new Date(year,month+1,0).getDate();
-  document.getElementById('monthTitle').innerText=`${year} 年 ${month+1} 月`;
-  const cal=document.getElementById('calendar'); cal.innerHTML='';
-  for(let i=0;i<firstDay;i++) cal.innerHTML+='<div></div>';
-  for(let d=1;d<=lastDate;d++){
-    const today=new Date(), id=`${year}-${month+1}-${d}`;
-    const dayEvents=events[id]||[];
-    let eventHtml='';
-    dayEvents.sort((a,b)=>a.start.localeCompare(b.start));
-    dayEvents.forEach(ev=>{
-      eventHtml+=`<div class="event-item ${ev.type}"> ${ev.start}-${ev.end} ${ev.text} </div>`;
+    <!-- Footer -->
+    <footer class="text-sm text-slate-500 text-center p-4">範例網站 • 可修改並用於教學 | 建議把此檔案放到 GitHub Pages 或學校 LMS</footer>
+  </main>
+
+  <script>
+    // 判斷閏年
+    function isLeapYear(y){
+      y = Number(y);
+      if (!Number.isFinite(y)) return false;
+      return (y%400===0) || (y%4===0 && y%100!==0);
+    }
+    document.getElementById('checkBtn').addEventListener('click', ()=>{
+      const y = document.getElementById('yearInput').value;
+      const res = isLeapYear(y);
+      const out = document.getElementById('result');
+      if (y==='') { out.innerText = '請輸入年份。'; return; }
+      out.innerText = res ? `${y} 是閏年` : `${y} 不是閏年`;
     });
-    cal.innerHTML+=`<div class="day ${today.toDateString()===new Date(year,month,d).toDateString()?'today':''}" onclick="openModal('${id}')"><strong>${d}</strong>${eventHtml}</div>`;
-  }
-}
 
-function prevMonth(){ current.setMonth(current.getMonth()-1); renderCalendar(); }
-function nextMonth(){ current.setMonth(current.getMonth()+1); renderCalendar(); }
-function toggleDark(){ document.body.classList.toggle('dark'); }
+    // Playground execution (sandboxed-ish)
+    const runBtn = document.getElementById('runBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const editor = document.getElementById('editor');
+    const demoRoot = document.getElementById('demoRoot');
 
-function openModal(id){
-  selectedDate=id; document.getElementById('modalDate').innerText=id;
-  document.getElementById('eventInput').value=''; document.getElementById('startTime').value='';
-  document.getElementById('endTime').value=''; document.getElementById('remindTime').value='';
-  renderEventList(); document.getElementById('modal').style.display='flex';
-}
-
-function addEvent(){
-  const text=document.getElementById('eventInput').value.trim();
-  const type=document.getElementById('eventType').value;
-  const start=document.getElementById('startTime').value;
-  const end=document.getElementById('endTime').value;
-  const remind=parseInt(document.getElementById('remindTime').value) || 0;
-  if(!text||!start||!end) return alert('請完整填寫事件及時間');
-  if(!events[selectedDate]) events[selectedDate]=[];
-  events[selectedDate].push({text,type,start,end,remind});
-  localStorage.setItem('events',JSON.stringify(events));
-  document.getElementById('eventInput').value=''; document.getElementById('startTime').value='';
-  document.getElementById('endTime').value=''; document.getElementById('remindTime').value='';
-  renderEventList(); renderCalendar();
-}
-
-function deleteEvent(index){
-  events[selectedDate].splice(index,1);
-  if(events[selectedDate].length===0) delete events[selectedDate];
-  localStorage.setItem('events',JSON.stringify(events));
-  renderEventList(); renderCalendar();
-}
-
-function renderEventList(){
-  const listDiv=document.getElementById('eventList'); listDiv.innerHTML='';
-  const dayEvents=events[selectedDate]||[];
-  dayEvents.sort((a,b)=>a.start.localeCompare(b.start));
-  dayEvents.forEach((ev,i)=>{
-    listDiv.innerHTML+=`<div class="event-item ${ev.type}">[${ev.start}-${ev.end}] ${ev.text} <button onclick="deleteEvent(${i})">刪除</button></div>`;
-  });
-}
-
-function closeModal(){ document.getElementById('modal').style.display='none'; }
-
-function checkReminder(){
-  const now=new Date();
-  for(const date in events){
-    events[date].forEach(ev=>{
-      const [y,m,d]=date.split('-').map(Number);
-      const [h1,m1]=ev.start.split(':').map(Number);
-      const eventTime=new Date(y,m-1,d,h1,m1);
-      const remindTime=new Date(eventTime.getTime() - ev.remind*60000);
-      if(remindTime<=now && eventTime>=now){
-        alert(`提醒：${date} ${ev.start}-${ev.end} ${ev.text}`);
+    runBtn.addEventListener('click', ()=>{
+      try{
+        // Provide demoRoot and console capture
+        const userCode = editor.value;
+        // eslint-disable-next-line no-eval
+        const fn = new Function('root', userCode);
+        fn(demoRoot);
+      }catch(e){
+        demoRoot.innerText = '執行錯誤：' + e.message;
       }
     });
-  }
-}
+    clearBtn.addEventListener('click', ()=> demoRoot.innerText = '');
 
-renderCalendar(); checkReminder();
-</script>
-
+    // 下載當前 HTML 檔
+    document.getElementById('downloadBtn').addEventListener('click', ()=>{
+      const html = '<!doctype html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([html], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'info-course-sample.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+  </script>
 </body>
 </html>
