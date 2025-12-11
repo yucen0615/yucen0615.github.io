@@ -1,60 +1,80 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" class="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>課業行事曆</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' }</script>
   <style>
-    pre { background: rgba(0,0,0,0.05); padding: 0.75rem; border-radius: .5rem; overflow:auto }
-    .card { @apply bg-white shadow-md rounded-2xl p-4 }
+    .card { background:white; shadow-md rounded-2xl p-4 }
+    .dark .card { background:#1f2937; color:white; }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #ddd; }
-    .calendar-day { background: white; min-height: 80px; padding: 0.25rem; border-radius: 0.5rem; cursor: pointer; }
+    .dark .calendar-grid { background:#374151; }
+    .calendar-day { background: white; min-height: 80px; padding: 0.25rem; border-radius: 0.5rem; cursor: pointer; position: relative; }
+    .dark .calendar-day { background:#111827; }
     .calendar-day .date { font-weight: bold; }
-    .event { background: #4f46e5; color: white; font-size: 0.75rem; margin-top: 2px; padding: 1px 3px; border-radius: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .event { font-size: 0.75rem; margin-top: 2px; padding: 1px 3px; border-radius: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .event.homework { background:#4f46e5; color:white; }
+    .event.exam { background:#dc2626; color:white; }
+    .event-form { margin-top:10px; border-top:1px solid #ddd; padding-top:10px; }
+    .dark .event-form { border-color:#374151; }
   </style>
 </head>
-<body class="bg-gradient-to-b from-slate-50 to-white min-h-screen text-slate-800">
+<body class="bg-gradient-to-b from-slate-50 to-white dark:from-gray-900 dark:to-gray-800 min-h-screen text-slate-800 dark:text-slate-200">
   <header class="max-w-5xl mx-auto p-6 flex items-center justify-between">
     <div class="flex items-center gap-4">
       <div class="w-12 h-12 bg-indigo-500 text-white rounded-lg flex items-center justify-center font-bold">課</div>
       <div>
         <h1 class="text-xl font-semibold">課業行事曆</h1>
-        <p class="text-sm text-slate-500">課程、作業、提醒與即時範例</p>
       </div>
-    </div>
+      </div>
     <nav class="space-x-4 text-sm">
-      <a href="#lessons" class="hover:underline">課程</a>
-      <a href="#exercise" class="hover:underline">練習</a>
-      <a href="#playground" class="hover:underline">試玩</a>
       <a href="#calendar" class="hover:underline">月曆</a>
+      <button id="toggleDark" class="px-2 py-1 bg-slate-200 dark:bg-gray-700 rounded">切換深色模式</button>
     </nav>
   </header>
 
   <main class="max-w-5xl mx-auto p-6 grid gap-6">
-    <!-- Hero -->
-    <section class="card">
-      <h2 class="text-2xl font-bold">開始你的課業行事曆</h2>
-      <p class="mt-2 text-slate-600">這是一個單檔範例網站，包含：課程大綱、程式練習題、月曆事件，並可即時新增提醒。</p>
-    </section>
-
-    <!-- Calendar -->
     <section id="calendar" class="card">
       <h3 class="text-lg font-semibold">月曆</h3>
       <div class="flex justify-between items-center mt-3 mb-2">
-        <button id="prevMonth" class="px-2 py-1 bg-slate-200 rounded">上個月</button>
+        <button id="prevMonth" class="px-2 py-1 bg-slate-200 dark:bg-gray-700 rounded">上個月</button>
         <div id="monthLabel" class="font-semibold"></div>
-        <button id="nextMonth" class="px-2 py-1 bg-slate-200 rounded">下個月</button>
+        <button id="nextMonth" class="px-2 py-1 bg-slate-200 dark:bg-gray-700 rounded">下個月</button>
       </div>
       <div class="calendar-grid" id="calendarGrid"></div>
 
-      <div class="mt-4">
-        <h4 class="font-semibold">新增事件</h4>
-        <div class="mt-2 space-y-2">
-          <input id="eventTitle" type="text" class="w-full p-2 border rounded" placeholder="事件名稱" />
-          <input id="eventDate" type="date" class="w-full p-2 border rounded" />
-          <button id="addCalendarEvent" class="px-3 py-2 bg-indigo-600 text-white rounded">新增事件</button>
+      <div class="event-form card">
+        <input id="eventTitle" type="text" class="w-full p-2 border rounded mt-1" placeholder="事件名稱" />
+        <div class="flex gap-2 mt-2">
+          <label>類別:</label>
+          <select id="eventType" class="p-2 border rounded">
+            <option value="homework">作業</option>
+            <option value="exam">考試</option>
+          </select>
         </div>
+        <div class="flex gap-2 mt-2">
+          <label>時間模式:</label>
+          <select id="eventMode" class="p-2 border rounded">
+            <option value="allday">整天</option>
+            <option value="range">時段</option>
+          </select>
+        </div>
+        <div id="timeRange" class="hidden flex gap-2 mt-2">
+          <input id="startTime" type="time" class="p-2 border rounded" />
+          <input id="endTime" type="time" class="p-2 border rounded" />
+        </div>
+        <div class="flex gap-2 mt-2">
+          <label>提醒:</label>
+          <input id="reminderValue" type="number" class="p-2 border rounded w-24" placeholder="數字" />
+          <select id="reminderUnit" class="p-2 border rounded">
+            <option value="days">天前</option>
+            <option value="hours">小時前</option>
+            <option value="seconds">秒前</option>
+          </select>
+        </div>
+        <button id="addCalendarEvent" class="px-3 py-2 bg-indigo-600 text-white rounded mt-2 w-full">新增事件</button>
       </div>
     </section>
   </main>
@@ -62,7 +82,12 @@
   <script>
     const calendarGrid = document.getElementById('calendarGrid');
     const monthLabel = document.getElementById('monthLabel');
+    const eventMode = document.getElementById('eventMode');
+    const timeRange = document.getElementById('timeRange');
+    const toggleDark = document.getElementById('toggleDark');
+    const eventType = document.getElementById('eventType');
     let current = new Date();
+    let selectedDate = null;
     let events = JSON.parse(localStorage.getItem('calendarEvents')||'[]');
 
     function renderCalendar(date){
@@ -76,24 +101,26 @@
 
       for(let i=0;i<firstDay;i++) calendarGrid.appendChild(document.createElement('div'));
 
-      for(let d=1;d<=lastDate;d++){
+      for(let d=1; d<=lastDate; d++){
         const dayDiv = document.createElement('div');
         dayDiv.className='calendar-day';
         dayDiv.innerHTML=`<div class='date'>${d}</div>`;
         const dayEvents = events.filter(e=>e.date===formatDate(new Date(year,month,d)));
         dayEvents.forEach(ev=>{
           const evDiv = document.createElement('div');
-          evDiv.className='event';
-          evDiv.innerText=ev.title;
+          evDiv.className='event '+ev.type;
+          evDiv.innerText=ev.title + (ev.mode==='range'?` ${ev.start}-${ev.end}`:'');
           dayDiv.appendChild(evDiv);
+        });
+        dayDiv.addEventListener('click', ()=>{
+          selectedDate = formatDate(new Date(year,month,d));
+          document.getElementById('eventDate').value = selectedDate;
         });
         calendarGrid.appendChild(dayDiv);
       }
     }
 
-    function formatDate(d){
-      return d.toISOString().split('T')[0];
-    }
+    function formatDate(d){ return d.toISOString().split('T')[0]; }
 
     document.getElementById('prevMonth').addEventListener('click', ()=>{
       current.setMonth(current.getMonth()-1);
@@ -104,16 +131,47 @@
       renderCalendar(current);
     });
 
+    eventMode.addEventListener('change', ()=>{
+      timeRange.classList.toggle('hidden', eventMode.value!=='range');
+    });
+
+    toggleDark.addEventListener('click', ()=>{
+      document.documentElement.classList.toggle('dark');
+    });
+
+    function setReminder(ev){
+      if(ev.remVal>0){
+        let ms = 0;
+        if(ev.reminderUnit==='days') ms = ev.remVal*24*60*60*1000;
+        if(ev.reminderUnit==='hours') ms = ev.remVal*60*60*1000;
+        if(ev.reminderUnit==='seconds') ms = ev.remVal*1000;
+        const eventTime = new Date(ev.date+'T'+(ev.mode==='range'?ev.start:'00:00'));
+        const delay = eventTime - Date.now() - ms;
+        if(delay>0){
+          setTimeout(()=>alert(`提醒：${ev.title} (${ev.type==='homework'?'作業':'考試'}) 即將開始`), delay);
+        }
+      }
+    }
+
     document.getElementById('addCalendarEvent').addEventListener('click', ()=>{
       const title = document.getElementById('eventTitle').value.trim();
       const date = document.getElementById('eventDate').value;
+      const mode = eventMode.value;
+      const start = document.getElementById('startTime').value;
+      const end = document.getElementById('endTime').value;
+      const remVal = Number(document.getElementById('reminderValue').value);
+      const remUnit = document.getElementById('reminderUnit').value;
+      const type = eventType.value;
       if(!title || !date){ alert('請輸入事件名稱與日期'); return; }
-      events.push({title,date});
+      const ev = {title,date,mode,start,end,remVal,reminderUnit:remUnit,type};
+      events.push(ev);
       localStorage.setItem('calendarEvents',JSON.stringify(events));
       renderCalendar(current);
       document.getElementById('eventTitle').value='';
+      setReminder(ev);
     });
 
+    events.forEach(ev=>setReminder(ev));
     renderCalendar(current);
   </script>
 </body>
