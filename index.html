@@ -1,10 +1,44 @@
-<!doctype html>
+
+  <!doctype html>
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>資訊課—教學網站範例</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">  // --- 行事曆邏輯 ---
+  const evMode = document.getElementById('evMode');
+  const timeRange = document.getElementById('timeRange');
+
+  evMode.addEventListener('change', ()=>{
+    timeRange.classList.toggle('hidden', evMode.value !== 'range');
+  });
+
+  const eventList = document.getElementById('eventList');
+  const addBtn = document.getElementById('addEvent');
+
+  addBtn.addEventListener('click', ()=>{
+    const title = evTitle.value.trim();
+    const date = evDate.value;
+    const mode = evMode.value;
+    const start = evStart.value;
+    const end = evEnd.value;
+    const remVal = Number(evRemVal.value);
+    const remUnit = evRemUnit.value;
+
+    if(!title || !date){ alert('請輸入事件名稱與日期'); return; }
+
+    const div = document.createElement('div');
+    div.className = 'p-2 bg-white rounded shadow';
+    div.innerHTML = `
+      <strong>${title}</strong><br>
+      日期：${date}<br>
+      ${mode==='allday' ? '整天事件' : `時段：${start} - ${end}`}<br>
+      提醒：${remVal}${remUnit==='days'?'天':remUnit==='hours'?'小時':'分鐘'}前
+    `;
+    eventList.appendChild(div);
+  });
+
+</script>
   <style>
     pre { background: rgba(0,0,0,0.05); padding: 0.75rem; border-radius: .5rem; overflow:auto }
 </style>
@@ -102,6 +136,57 @@ root.innerText = '今天是：' + new Date().toLocaleString();
 
     <!-- Footer -->
     <footer class="text-sm text-slate-500 text-center p-4">範例網站 • 可修改並用於教學 | 建議把此檔案放到 GitHub Pages 或學校 LMS</footer>
+      <!-- Scheduler -->
+    <section id="scheduler" class="card">
+      <h3 class="text-lg font-semibold">新增行事曆事件</h3>
+      <div class="grid md:grid-cols-2 gap-4 mt-3">
+        <div class="space-y-3">
+          <div>
+            <label class="text-sm">事件名稱</label>
+            <input id="evTitle" type="text" class="w-full p-2 border rounded" placeholder="例如：數學作業" />
+          </div>
+          <div>
+            <label class="text-sm">選擇日期</label>
+            <input id="evDate" type="date" class="w-full p-2 border rounded" />
+          </div>
+          <div>
+            <label class="text-sm">時間模式</label>
+            <select id="evMode" class="w-full p-2 border rounded">
+              <option value="allday">整天事件</option>
+              <option value="range">選擇時段</option>
+            </select>
+          </div>
+          <div id="timeRange" class="hidden space-y-2">
+            <div>
+              <label class="text-sm">開始時間</label>
+              <input id="evStart" type="time" class="w-full p-2 border rounded" />
+            </div>
+            <div>
+              <label class="text-sm">結束時間</label>
+              <input id="evEnd" type="time" class="w-full p-2 border rounded" />
+            </div>
+          </div>
+          <div>
+            <label class="text-sm">提醒時間</label>
+            <div class="flex gap-2">
+              <input id="evRemVal" type="number" class="p-2 border rounded w-24" placeholder="數字" />
+              <select id="evRemUnit" class="p-2 border rounded">
+                <option value="days">天前</option>
+                <option value="hours">小時前</option>
+                <option value="minutes">分鐘前</option>
+              </select>
+            </div>
+          </div>
+          <button id="addEvent" class="px-3 py-2 bg-indigo-600 text-white rounded">新增事件</button>
+        </div>
+
+        <div>
+          <label class="text-sm">事件列表</label>
+          <div id="eventList" class="mt-2 space-y-2 p-3 border rounded bg-slate-50 h-64 overflow-auto"></div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <script>
