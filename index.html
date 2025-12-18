@@ -7,216 +7,321 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { darkMode: 'class' }</script>
   <style>
+    input:focus, select:focus, button:focus { outline: none; box-shadow: none; border-color: #999; }
+    .dark input:focus, .dark select:focus { border-color: #666; }
     body { transition: background 0.3s, color 0.3s; }
-    .card { background:#ffffff; shadow-md rounded-2xl p-6; transition: background 0.3s, color 0.3s; }
+    .card { background:#ffffff; padding:1.5rem; border-radius:1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
     .dark .card { background:#000000; color:#f3f4f6; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: #ffffff; border-radius: 0.5rem; overflow: hidden; }
-    .dark .calendar-grid { background:#000000; }
-    .calendar-day { background: #ffffff; color:#000000; min-height: 100px; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; position: relative; transition: all 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
-    .dark .calendar-day { background:#1a1a1a; color:#f3f4f6; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-    .calendar-day:hover { background:#e2e2e2; }
-    .dark .calendar-day:hover { background:#333333; }
-    .calendar-day .date { font-weight: bold; margin-bottom: 0.25rem; }
-    .event { font-size: 0.75rem; margin-top: 2px; padding: 2px 4px; border-radius: 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.3s; }
-    .event.homework { background: #D6A77A; color:#000; }
-    .event.exam { background: #74B3CE; color:#000; }
-    .event.reminder { background: #FF7F50; color: #000; font-weight: bold; }
-    .dark .event.homework { background:#A57C5F; color:#fff; }
-    .dark .event.exam { background:#5B9EB8; color:#fff; }
-    .dark .event.reminder { background:#FF7F50; color:#fff; }
-    .calendar-week { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; padding-bottom: 4px; border-bottom: 1px solid #d1d5db; }
-    .dark .calendar-week { border-color:#555555; }
-    input, select, button { transition: all 0.2s; }
-    button { cursor: pointer; }
-    input:focus, select:focus { outline:none; border-color:#555555; box-shadow:0 0 0 2px rgba(85,85,85,0.3); }
-    .dark input:focus, .dark select:focus { border-color:#888888; box-shadow:0 0 0 2px rgba(136,136,136,0.3); }
-    .btn { background:#555555; color:white; padding:0.5rem 1rem; border-radius:0.5rem; transition: all 0.2s; }
-    .btn:hover { background:#333333; }
-    .dark .btn { background:#333333; color:white; }
-    .dark .btn:hover { background:#555555; }
-    .event-modal-text { color: #000; }
-    .dark .event-modal-text { color: #f0f0f0; }
-    .light-btn { background:#f3f3f3; color:#000; }
-    .light-btn:hover { background:#e0e0e0; }
-    .dark .light-btn { background:#555555; color:#fff; }
-    .dark .light-btn:hover { background:#444444; }
-    #eventModal { display: none; align-items: center; justify-content: center; }
-    #eventModal.show { display: flex; }
-    .dark #eventModal > div { background:#2a2a2a; }
+    .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+    .calendar-day { background:#fff; height:110px; padding:6px; border-radius:8px; cursor:pointer; display:flex; flex-direction:column; overflow:hidden; }
+
+/* 隱藏事項區 scrollbar（仍可滑動） */
+.calendar-day > div::-webkit-scrollbar{ display:none; }
+.calendar-day > div{ scrollbar-width:none; -ms-overflow-style:none; }
+    .dark .calendar-day { background:#1a1a1a; color:#f3f4f6; }
+    .calendar-day:hover { background:#e5e5e5; }
+    .dark .calendar-day:hover { background:#333; }
+    .date { font-weight:bold; display:inline-flex; align-items:center; justify-content:center; padding:2px 6px; border-radius:9999px; cursor:pointer; transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
+    .date:hover{ background:#e5e5e5; transform: translateY(-1px); box-shadow: 0 0 0 2px rgba(0,0,0,0.25); }
+    .dark .date:hover{ background:#333; box-shadow: 0 0 0 2px rgba(255,255,255,0.35); }
+    .event { font-size:0.75rem; margin-top:4px; padding:2px 6px; border-radius:6px; display:flex; align-items:center; gap:4px; transition: background-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease; }
+    .event:hover{ transform: translateY(-1px); box-shadow:0 2px 4px rgba(0,0,0,0.12); }
+    .dark .event:hover{ box-shadow:0 2px 6px rgba(0,0,0,0.45); }
+    .event::before{ content:''; width:6px; height:6px; border-radius:50%; display:inline-block; }
+    .homework{ background:#D6E4FF; color:#1E3A8A; }
+    .homework::before{ background:#4F7DF3; }
+    .exam{ background:#EFC7D5; color:#6B1F38; }
+    .exam::before{ background:#C13F6A; }
+    .dark .homework{ background:#2B3F87; color:#EAF0FF; }
+    .dark .homework::before{ background:#8DA2FB; }
+    .dark .exam{ background:#7A2942; color:#FFE9F1; }
+    .dark .exam::before{ background:#F2A0B8; }
+    .btn { background:#555; color:white; padding:6px 12px; border-radius:8px; }
+    #eventModal { display:none; }
+    #eventModal.show { display:flex; }
   </style>
 </head>
-<body class="bg-white dark:bg-black text-gray-900 dark:text-gray-100 min-h-screen">
-  <header class="max-w-5xl mx-auto p-6 flex items-center justify-between">
-    <h1 class="text-xl font-semibold">課業行事曆</h1>
-    <nav class="space-x-4 text-sm flex items-center gap-2">
-      <a href="#calendar" class="hover:underline">月曆</a>
-      <span id="darkStatus" class="text-sm font-medium">ON</span>
-      <button id="toggleDark" class="btn">切換深色模式</button>
-    </nav>
-  </header>
+<body class="bg-white dark:bg-black min-h-screen">
+<header class="max-w-5xl mx-auto p-6 flex justify-between">
+  <h1 class="text-xl font-semibold">課業行事曆（完整版）</h1>
+  <button id="toggleDark" class="btn"><span id="modeLabel"></span></button>
+</header>
 
-  <main class="max-w-5xl mx-auto p-6 grid gap-6">
-    <section id="calendar" class="card">
-      <h3 class="text-lg font-semibold">月曆</h3>
-      <div class="flex justify-between items-center mt-3 mb-2">
-        <button id="prevMonth" class="btn">上個月</button>
-        <div id="monthLabel" class="font-semibold"></div>
-        <button id="nextMonth" class="btn">下個月</button>
-      </div>
-      <div class="calendar-week">
-        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
-      </div>
-      <div class="calendar-grid" id="calendarGrid"></div>
-    </section>
-  </main>
+<main class="max-w-5xl mx-auto p-6">
+  <!-- 月曆視圖 -->
+  <section id="monthView" class="card">
+    <div class="flex justify-between mb-2">
+      <button id="prevMonth" class="btn">上個月</button>
+      <div id="monthLabel"></div>
+      <button id="nextMonth" class="btn">下個月</button>
+    </div>
+    <div class="grid grid-cols-7 text-center font-bold">
+      <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+    </div>
+    <div id="calendarGrid" class="calendar-grid mt-2"></div>
+  </section>
 
-  <div id="eventModal" class="fixed inset-0 bg-black/50 hidden">
-    <div class="bg-white dark:bg-gray-700 p-6 rounded-xl w-80 shadow-lg event-modal-text m-auto">
-      <h4 class="text-lg font-semibold mb-2">新增/編輯事件</h4>
-      <input id="eventTitle" type="text" class="w-full p-2 border rounded mt-1 event-modal-text dark:text-black" placeholder="事件名稱" />
-      <div class="flex gap-2 mt-2">
-        <label>類別:</label>
-        <select id="eventType" class="p-2 border rounded event-modal-text dark:text-black">
-          <option value="homework">作業</option>
-          <option value="exam">考試</option>
-        </select>
-      </div>
-      <div class="flex gap-2 mt-2">
-        <label>時間模式:</label>
-        <select id="eventMode" class="p-2 border rounded event-modal-text dark:text-black">
-          <option value="allday">整天</option>
-          <option value="range">時段</option>
-        </select>
-      </div>
-      <div id="timeRange" class="hidden flex gap-2 mt-2">
-        <input id="startTime" type="time" class="p-2 border rounded event-modal-text dark:text-black" />
-        <input id="endTime" type="time" class="p-2 border rounded event-modal-text dark:text-black" />
-      </div>
-      <div class="flex gap-2 mt-2">
-        <label>提醒:</label>
-        <input id="reminderValue" type="number" class="p-2 border rounded w-24 event-modal-text dark:text-black" placeholder="數字" />
-        <select id="reminderUnit" class="p-2 border rounded event-modal-text dark:text-black">
-          <option value="days">天前</option>
-          <option value="hours">小時前</option>
-          <option value="seconds">秒前</option>
-        </select>
-      </div>
-      <div class="flex justify-end gap-2 mt-4">
-        <button id="cancelEvent" class="btn light-btn">取消</button>
-        <button id="addCalendarEvent" class="btn light-btn">新增/更新</button>
-      </div>
+  <!-- 單日視圖（第二階段） -->
+  <section id="dayView" class="card hidden">
+    <div class="flex items-center justify-between mb-4">
+      <button id="backToMonth" class="btn">← 返回月曆</button>
+      <div id="dayLabel" class="font-semibold"></div>
+      <div></div>
+    </div>
+
+    <!-- 整天事項 -->
+    <div id="allDayEvents" class="mb-4"></div>
+
+    <!-- 時間軸 -->
+    <div id="timeline" class="space-y-2"></div>
+  </section>
+</main>
+
+<div id="eventModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center">
+  <div class="bg-[#fafafa] dark:bg-[#111111] text-gray-900 dark:text-gray-100 p-6 rounded-3xl w-[380px] shadow-2xl">
+    <h3 class="text-lg font-semibold mb-4">新增／編輯事件</h3>
+    <input id="eventTitle" class="w-full p-3 rounded-xl mb-3 bg-[#f2f2f2] dark:bg-[#1f1f1f] border-none" placeholder="事件名稱" />
+    <div class="flex items-center gap-3 mb-3">
+      <span class="w-20 text-sm">類別</span>
+      <select id="eventType" class="flex-1 p-3 rounded-xl bg-[#f2f2f2] dark:bg-[#1f1f1f] border-none">
+        <option value="homework">作業</option>
+        <option value="exam">考試</option>
+      </select>
+    </div>
+    <div class="flex items-center gap-3 mb-3">
+      <span class="w-20 text-sm">時間</span>
+      <select id="eventMode" class="flex-1 p-3 rounded-xl bg-[#f2f2f2] dark:bg-[#1f1f1f] border-none">
+        <option value="allday">整天</option>
+        <option value="range">時段</option>
+      </select>
+    </div>
+    <div id="timeRange" class="hidden flex gap-3 mb-3">
+      <input id="startTime" type="time" class="flex-1 p-3 rounded-xl bg-[#f2f2f2] dark:bg-[#1f1f1f] border-none" />
+      <input id="endTime" type="time" class="flex-1 p-3 rounded-xl bg-[#f2f2f2] dark:bg-[#1f1f1f] border-none" />
+    </div>
+    <div class="flex items-center gap-3 mb-4">
+      <span class="w-20 text-sm">提醒</span>
+      <input id="reminderValue" type="number" class="w-20 p-3 rounded-xl bg-[#f2f2f2] dark:bg-[#1f1f1f] border-none" placeholder="0" />
+      <select id="reminderUnit" class="flex-1 p-3 rounded-xl bg-[#f2f2f2] dark:bg-[#1f1f1f] border-none">
+        <option value="days">天前</option>
+        <option value="hours">小時前</option>
+      </select>
+    </div>
+    <div class="flex justify-end gap-3">
+      <button id="deleteEvent" class="px-4 py-2 rounded-xl bg-red-200 dark:bg-[#4a1f1f] hidden">刪除</button>
+      <button id="cancelEvent" class="px-4 py-2 rounded-xl bg-gray-200 dark:bg-[#2a2a2a]">取消</button>
+      <button id="saveEvent" class="px-4 py-2 rounded-xl bg-gray-300 dark:bg-[#3a3a3a]">儲存</button>
     </div>
   </div>
+</div>
 
-  <script>
-    const calendarGrid = document.getElementById('calendarGrid');
-    const monthLabel = document.getElementById('monthLabel');
-    const eventModal = document.getElementById('eventModal');
-    const eventTitle = document.getElementById('eventTitle');
-    const eventType = document.getElementById('eventType');
-    const eventMode = document.getElementById('eventMode');
-    const timeRange = document.getElementById('timeRange');
-    const startTime = document.getElementById('startTime');
-    const endTime = document.getElementById('endTime');
-    const reminderValue = document.getElementById('reminderValue');
-    const reminderUnit = document.getElementById('reminderUnit');
-    const addCalendarEventBtn = document.getElementById('addCalendarEvent');
-    const cancelEventBtn = document.getElementById('cancelEvent');
-    const toggleDark = document.getElementById('toggleDark');
-    const darkStatus = document.getElementById('darkStatus');
+<script>
+const calendarGrid = document.getElementById('calendarGrid');
+const monthLabel = document.getElementById('monthLabel');
+const eventModal = document.getElementById('eventModal');
+const eventTitle = document.getElementById('eventTitle');
+const eventType = document.getElementById('eventType');
+const eventMode = document.getElementById('eventMode');
+const timeRange = document.getElementById('timeRange');
+const startTime = document.getElementById('startTime');
+const endTime = document.getElementById('endTime');
+const reminderValue = document.getElementById('reminderValue');
+const reminderUnit = document.getElementById('reminderUnit');
+let current = new Date();
+let editingId = null;
+let selectedDate = null;
+let events = JSON.parse(localStorage.getItem('events')||'[]');
+function formatDate(d){ return d.toISOString().split('T')[0]; }
 
-    let current = new Date();
-    let selectedDate = null;
-    let events = JSON.parse(localStorage.getItem('calendarEvents')||'[]');
+function renderCalendar(){
+  calendarGrid.innerHTML='';
+  const y=current.getFullYear(), m=current.getMonth();
+  monthLabel.innerText=`${y} 年 ${m+1} 月`;
+  const first=new Date(y,m,1).getDay();
+  const last=new Date(y,m+1,0).getDate();
+  for(let i=0;i<first;i++) calendarGrid.appendChild(document.createElement('div'));
+  for(let d=1;d<=last;d++){
+    const day=document.createElement('div');
+    day.className='calendar-day';
+    const dateObj = new Date(y,m,d);
+    const dateStr=formatDate(dateObj);
+    day.innerHTML=`<div class='date' data-date="${dateStr}">${d}</div>`;
 
-    function renderCalendar(date){
-      calendarGrid.innerHTML = '';
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      monthLabel.innerText = `${year} 年 ${month+1} 月`;
-      const firstDay = new Date(year, month, 1).getDay();
-      const lastDate = new Date(year, month+1, 0).getDate();
-      for(let i=0;i<firstDay;i++) calendarGrid.appendChild(document.createElement('div'));
-      for(let d=1; d<=lastDate; d++){
-        const dayDiv = document.createElement('div');
-        dayDiv.className='calendar-day';
-        dayDiv.innerHTML=`<div class='date'>${d}</div>`;
-
-        const dayEvents = events.filter(e=>e.date===formatDate(new Date(year,month,d)))
-                               .sort((a,b)=> (a.mode==='allday'?0:1) - (b.mode==='allday'?0:1) || a.start.localeCompare(b.start));
-
-        dayEvents.forEach((ev,index)=>{
-          if(index>3) return; // 最多顯示前4個
-          const evDiv = document.createElement('div');
-          evDiv.className='event '+ev.type;
-          if(ev.remVal>0){ evDiv.className='event reminder'; evDiv.style.background='#FF7F50'; evDiv.style.color='#fff'; }
-          else {
-            if(ev.type==='homework') { evDiv.style.background=document.documentElement.classList.contains('dark')?'#A57C5F':'#D6A77A'; evDiv.style.color=document.documentElement.classList.contains('dark')?'#fff':'#000'; }
-            else { evDiv.style.background=document.documentElement.classList.contains('dark')?'#5B9EB8':'#74B3CE'; evDiv.style.color=document.documentElement.classList.contains('dark')?'#fff':'#000'; }
-          }
-          evDiv.innerText=ev.title + (ev.mode==='range'?` ${ev.start}-${ev.end}`:'');
-          evDiv.addEventListener('click',(e)=>{
-            e.stopPropagation();
-            selectedDate=ev.date;
-            openEventModal();
-          });
-          dayDiv.appendChild(evDiv);
-        });
-
-        dayDiv.addEventListener('click', ()=>{ selectedDate = formatDate(new Date(year,month,d)); openEventModal(); });
-        dayDiv.addEventListener('dblclick', ()=>{
-          // 打開詳細視窗顯示所有事件
-          selectedDate = formatDate(new Date(year,month,d));
-          openDetailedView(selectedDate);
-        });
-
-        calendarGrid.appendChild(dayDiv);
-      }
-    }
-
-    function openDetailedView(date){
-      const dayEvents = events.filter(e=>e.date===date).sort((a,b)=> (a.mode==='allday'?0:1) - (b.mode==='allday'?0:1) || a.start.localeCompare(b.start));
-      const detailText = dayEvents.map(e=>`${e.mode==='allday'?'整天':'時段 '+e.start+'-'+e.end}: ${e.title} (${e.type==='homework'?'作業':'考試'})`).join('\n');
-      alert(`查看 ${date} 所有事件:\n` + detailText);
-    }
-
-    function formatDate(d){ return d.toISOString().split('T')[0]; }
-    function openEventModal(){ eventModal.classList.add('show'); }
-    function closeEventModal(){ eventModal.classList.remove('show'); eventTitle.value=''; startTime.value=''; endTime.value=''; reminderValue.value=''; eventMode.value='allday'; timeRange.classList.add('hidden'); }
-
-    eventMode.addEventListener('change', ()=>{ timeRange.classList.toggle('hidden', eventMode.value!=='range'); });
-    addCalendarEventBtn.addEventListener('click', ()=>{
-      if(!eventTitle.value || !selectedDate){ alert('請輸入事件名稱'); return; }
-      const existingIndex = events.findIndex(e=>e.date===selectedDate && e.title===eventTitle.value);
-      const ev = {title:eventTitle.value, date:selectedDate, type:eventType.value, mode:eventMode.value, start:startTime.value, end:endTime.value, remVal:Number(reminderValue.value), reminderUnit:reminderUnit.value};
-      if(existingIndex>=0) events[existingIndex]=ev;
-      else events.push(ev);
-      localStorage.setItem('calendarEvents', JSON.stringify(events));
-      renderCalendar(current);
-      setReminder(ev);
-      closeEventModal();
+    const eventContainer = document.createElement('div');
+    eventContainer.className = 'mt-1 flex-1 overflow-y-auto';
+    events.filter(e=>e.date===dateStr).forEach(e=>{
+      if(!e.id) e.id = crypto.randomUUID();
+      const ev=document.createElement('div');
+      ev.className='event '+e.type;
+      ev.innerText = e.mode==='range' && e.start ? `${e.start}–${e.end} ${e.title}` : e.title;
+      ev.onclick=(evt)=>{
+        evt.stopPropagation();
+        editingId = e.id;
+        selectedDate = e.date;
+        eventTitle.value = e.title;
+        eventType.value = e.type;
+        eventMode.value = e.mode;
+        startTime.value = e.start || '';
+        endTime.value = e.end || '';
+        reminderValue.value = e.reminder || '';
+        reminderUnit.value = e.reminderUnit || 'days';
+        timeRange.classList.toggle('hidden', e.mode !== 'range');
+        document.getElementById('deleteEvent').classList.remove('hidden');
+        eventModal.classList.add('show');
+      };
+      eventContainer.appendChild(ev);
     });
-    cancelEventBtn.addEventListener('click', closeEventModal);
 
-    function setReminder(ev){
-      if(ev.remVal>0){
-        let ms=0;
-        if(ev.reminderUnit==='days') ms=ev.remVal*24*60*60*1000;
-        if(ev.reminderUnit==='hours') ms=ev.remVal*60*60*1000;
-        if(ev.reminderUnit==='seconds') ms=ev.remVal*1000;
-        const eventTime = new Date(ev.date+'T'+(ev.mode==='range'?ev.start:'00:00'));
-        const delay = eventTime - Date.now() - ms;
-        if(delay>0) setTimeout(()=>alert(`提醒：${ev.title} (${ev.type==='homework'?'作業':'考試'}) 即將開始`), delay);
-      }
-    }
+    // 點日期數字 → 進入單日視圖
+    const dateEl = day.querySelector('.date');
+    dateEl.onclick = (evt)=>{
+      evt.stopPropagation();
+      openDayView(dateObj);
+    };
 
-    events.forEach(ev=>setReminder(ev));
-    document.getElementById('prevMonth').addEventListener('click', ()=>{ current.setMonth(current.getMonth()-1); renderCalendar(current); });
-    document.getElementById('nextMonth').addEventListener('click', ()=>{ current.setMonth(current.getMonth()+1); renderCalendar(current); });
+    // 點格子其他地方 → 新增事項
+    day.onclick=()=>{
+      selectedDate = dateStr;
+      editingId = null;
+      eventTitle.value = '';
+      startTime.value = '';
+      endTime.value = '';
+      reminderValue.value = '';
+      document.getElementById('deleteEvent').classList.add('hidden');
+      eventModal.classList.add('show');
+    };
 
-    toggleDark.addEventListener('click', ()=>{ document.documentElement.classList.toggle('dark'); darkStatus.innerText = document.documentElement.classList.contains('dark') ? 'ON' : 'OFF'; });
+    day.appendChild(eventContainer);
 
-    renderCalendar(current);
-  </script>
+    calendarGrid.appendChild(day);
+  }
+}
+
+eventMode.onchange = ()=>{ timeRange.classList.toggle('hidden', eventMode.value !== 'range'); };
+
+document.getElementById('saveEvent').onclick=()=>{
+  if(!eventTitle.value) return alert('請輸入名稱');
+  if(editingId){
+    const e = events.find(x=>x.id===editingId);
+    Object.assign(e,{ title:eventTitle.value, type:eventType.value, mode:eventMode.value, start:startTime.value, end:endTime.value, reminder:reminderValue.value, reminderUnit:reminderUnit.value });
+  }else{
+    events.push({ id:crypto.randomUUID(), date:selectedDate, title:eventTitle.value, type:eventType.value, mode:eventMode.value, start:startTime.value, end:endTime.value, reminder: reminderValue.value, reminderUnit: reminderUnit.value });
+  }
+  localStorage.setItem('events',JSON.stringify(events));
+  editingId=null;
+  eventTitle.value=''; startTime.value=''; endTime.value=''; reminderValue.value='';
+  document.getElementById('deleteEvent').classList.add('hidden');
+  eventModal.classList.remove('show');
+  renderCalendar();
+};
+
+document.getElementById('cancelEvent').onclick=()=>{
+  editingId=null;
+  document.getElementById('deleteEvent').classList.add('hidden');
+  eventModal.classList.remove('show');
+};
+
+document.getElementById('deleteEvent').onclick=()=>{
+  if(editingId){
+    events = events.filter(e=>e.id!==editingId);
+    localStorage.setItem('events',JSON.stringify(events));
+  }
+  editingId=null;
+  document.getElementById('deleteEvent').classList.add('hidden');
+  eventModal.classList.remove('show');
+  renderCalendar();
+};
+
+document.getElementById('prevMonth').onclick=()=>{ current.setMonth(current.getMonth()-1); renderCalendar(); };
+document.getElementById('nextMonth').onclick=()=>{ current.setMonth(current.getMonth()+1); renderCalendar(); };
+const modeLabel = document.getElementById('modeLabel');
+function updateModeLabel(){ modeLabel.innerText = document.documentElement.classList.contains('dark') ? '深色模式' : '淺色模式'; }
+document.getElementById('toggleDark').onclick=()=>{ document.documentElement.classList.toggle('dark'); updateModeLabel(); };
+updateModeLabel(); renderCalendar();
+
+function scheduleReminders(){
+  events.forEach(e=>{
+    if(!e.reminder || e.reminder <= 0) return;
+    let eventTime = new Date(e.date + 'T09:00');
+    if(e.mode === 'range' && e.start){ eventTime = new Date(e.date + 'T' + e.start); }
+    let remindMs = Number(e.reminder) * (e.reminderUnit === 'days' ? 86400000 : 3600000);
+    let remindTime = eventTime.getTime() - remindMs;
+    let delay = remindTime - Date.now();
+    if(delay > 0){ setTimeout(()=>{ alert(`⏰ 提醒：${e.title}`); }, delay); }
+  });
+}
+
+scheduleReminders();
+
+// ===== 第二階段：單日時間軸 =====
+const monthView = document.getElementById('monthView');
+const dayView = document.getElementById('dayView');
+const dayLabel = document.getElementById('dayLabel');
+const allDayEvents = document.getElementById('allDayEvents');
+const timeline = document.getElementById('timeline');
+
+document.getElementById('backToMonth').onclick=()=>{
+  dayView.classList.add('hidden');
+  monthView.classList.remove('hidden');
+};
+
+function openDayView(dateObj){
+  selectedDate = formatDate(dateObj);
+  monthView.classList.add('hidden');
+  dayView.classList.remove('hidden');
+  dayLabel.innerText = `${dateObj.getFullYear()} 年 ${dateObj.getMonth()+1} 月 ${dateObj.getDate()} 日`;
+  renderDayTimeline();
+}
+
+function renderDayTimeline(){
+  allDayEvents.innerHTML = '';
+  timeline.innerHTML = '';
+
+  const dayEvents = events.filter(e=>e.date===selectedDate);
+
+  // 整天事項
+  dayEvents.filter(e=>e.mode==='allday').forEach(e=>{
+    const div = document.createElement('div');
+    div.className = 'event '+e.type;
+    div.innerText = e.title;
+    allDayEvents.appendChild(div);
+  });
+
+  // 時段事項（簡易時間軸）
+  for(let h=0; h<24; h++){
+    const row = document.createElement('div');
+    row.className = 'flex items-start gap-3';
+    row.innerHTML = `<div class="w-12 text-xs text-gray-500">${String(h).padStart(2,'0')}:00</div>`;
+
+    const slot = document.createElement('div');
+    slot.className = 'flex-1 min-h-[28px]';
+
+    dayEvents.filter(e=>e.mode==='range' && e.start && parseInt(e.start.split(':')[0])===h)
+      .forEach(e=>{
+        const ev = document.createElement('div');
+        ev.className = 'event '+e.type;
+        ev.innerText = `${e.start}–${e.end} ${e.title}`;
+        ev.onclick=()=>{
+          editingId = e.id;
+          eventTitle.value = e.title;
+          eventType.value = e.type;
+          eventMode.value = e.mode;
+          startTime.value = e.start;
+          endTime.value = e.end;
+          reminderValue.value = e.reminder || '';
+          reminderUnit.value = e.reminderUnit || 'days';
+          timeRange.classList.remove('hidden');
+          document.getElementById('deleteEvent').classList.remove('hidden');
+          eventModal.classList.add('show');
+        };
+        slot.appendChild(ev);
+      });
+
+    row.appendChild(slot);
+    timeline.appendChild(row);
+  }
+}
+
+</script>
 </body>
 </html>
